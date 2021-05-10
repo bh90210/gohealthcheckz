@@ -5,4 +5,3 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o "testapp" ./examples/http/
 
 FROM alpine:3.13.5
 COPY --from=0 /app/testapp /bin/
-# RUN apk -Uuv add ca-certificates
