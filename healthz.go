@@ -1,7 +1,9 @@
 // Package healthz is a small & simple to use library for liveness & readiness Kubernetes checks (gRPC included).
 package healthz
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Service int
 
@@ -20,10 +22,14 @@ const (
 	LIVE
 )
 
+func Yo() {
+
+}
+
 // LivenessReadiness .
-func LivenessReadiness(req chan State, rep chan bool, f func()) {
-	http.Handle("/ready", ready(req, rep))
-	http.Handle("/live", live(req, rep))
+func LivenessReadiness(req chan State, res chan bool, f func()) {
+	http.Handle("/ready", ready(req, res))
+	http.Handle("/live", live(req, res))
 	liserv := func() {
 		if err := http.ListenAndServe(":6080", nil); err != nil {
 			return
@@ -34,10 +40,10 @@ func LivenessReadiness(req chan State, rep chan bool, f func()) {
 	go f()
 }
 
-func ready(req chan State, rep chan bool) http.HandlerFunc {
+func ready(req chan State, res chan bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		req <- READY
-		switch <-rep {
+		switch <-res {
 		case false:
 			w.WriteHeader(http.StatusServiceUnavailable)
 		case true:
@@ -46,7 +52,7 @@ func ready(req chan State, rep chan bool) http.HandlerFunc {
 	}
 }
 
-func live(req chan State, rep chan bool) http.HandlerFunc {
+func live(req chan State, res chan bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		// switch *service {
 		// case GRPC:
@@ -60,7 +66,7 @@ func live(req chan State, rep chan bool) http.HandlerFunc {
 		// 	w.WriteHeader(http.StatusOK)
 		// }
 		req <- LIVE
-		switch <-rep {
+		switch <-res {
 		case false:
 			w.WriteHeader(http.StatusServiceUnavailable)
 		case true:
