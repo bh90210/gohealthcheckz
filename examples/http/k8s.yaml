@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testapp
+  namespace: default
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      name: testapp
+  template:
+    metadata:
+      labels:
+        name: testapp
+    spec:
+      containers:
+      - name: grpc
+        image: bh90210/healtzcheck:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh"]
+        args: ["-c", "/bin/testapp"]
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 6080
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 6080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+      terminationGracePeriodSeconds: 5

@@ -22,10 +22,6 @@ const (
 	LIVE
 )
 
-func Yo() {
-
-}
-
 // LivenessReadiness .
 func LivenessReadiness(req chan State, res chan bool, f func()) {
 	http.Handle("/ready", ready(req, res))
@@ -74,3 +70,7 @@ func live(req chan State, res chan bool) http.HandlerFunc {
 		}
 	}
 }
+
+// startup
+
+// termination
