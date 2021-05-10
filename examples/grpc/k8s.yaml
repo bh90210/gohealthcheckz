@@ -11,38 +11,18 @@ spec:
       name: grpc
   template:
     metadata:
-      annotations:
-        linkerd.io/inject: enabled
-        config.linkerd.io/skip-outbound-ports: "4222"
       labels:
         name: grpc
     spec:
       containers:
       - name: grpc
-        image: registry.jepa.network/bh90210/grpc:latest
+        image: bh90210/healtzcheckgrpc:latest
         imagePullPolicy: Always
         command: ["/bin/sh"]
-        args: ["-c", "/app/grpc"]
-        env:
-          - name: FOR_GODS_SAKE_PLEASE_REDEPLOY
-            value: THIS_STRING_IS_REPLACED_DURING_BUILD
-          - name: DGRAPHURL
-            value: dgraph-alpha-public.default.svc.cluster.local
-          - name: NATSURL
-            value: nats://jepa.default.svc.cluster.local:4222
-          # - name: GODEBUG
-          #   value: x509ignoreCN=0
-          # - name: DGRAPH_SERVICE_IP 
-          #   valueFrom: 
-          #     secretKeyRef:
-          #       name: dgraph
-          #       key: serv.ip
+        args: ["-c", "/bin/testapp"]
         ports:
           - containerPort: 50051
             name: grpc
-          - containerPort: 9092
-            name: grpc-prometheus
-          - containerPort: 4222
         livenessProbe:
           httpGet:
             path: /live
@@ -64,17 +44,3 @@ spec:
       imagePullSecrets:
       - name: regcred
       terminationGracePeriodSeconds: 5
-  affinity: 
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          - labelSelector:
-              matchExpressions:
-              - key: name
-                operator: In
-                values:
-                - grpc
-            topologyKey: kubernetes.io/hostname
-  updateStrategy:
-    type: RollingUpdate
