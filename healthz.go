@@ -5,72 +5,52 @@ import (
 	"net/http"
 )
 
-type Service int
+type state int
 
 const (
-	LOGGER Service = iota
-	GRPC
-	AUTHORIZATION
-	AUTHENTICATION
-	WEBSITE
+	notready state = iota
+	ready
 )
 
-type State int
+var s state
 
-const (
-	READY State = iota
-	LIVE
-)
+// Start .
+func Start() error {
+	http.Handle("/ready", readiness())
+	http.Handle("/live", liveness())
+	return http.ListenAndServe(":6080", nil)
+}
 
-// LivenessReadiness .
-func LivenessReadiness(req chan State, res chan bool, f func()) {
-	http.Handle("/ready", ready(req, res))
-	http.Handle("/live", live(req, res))
-	liserv := func() {
-		if err := http.ListenAndServe(":6080", nil); err != nil {
+func Ready() {
+	s = ready
+}
+
+func NotReady() {
+	s = notready
+}
+
+func readiness() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if s == ready {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
-	}
-
-	go liserv()
-	go f()
-}
-
-func ready(req chan State, res chan bool) http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
-		req <- READY
-		switch <-res {
-		case false:
-			w.WriteHeader(http.StatusServiceUnavailable)
-		case true:
-			w.WriteHeader(http.StatusOK)
-		}
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 }
 
-func live(req chan State, res chan bool) http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
-		// switch *service {
-		// case GRPC:
-		// 	switch gRPCLiveCheck() {
-		// 	case 1:
-		// 		w.WriteHeader(http.StatusOK)
-		// 	default:
-		// 		w.WriteHeader(http.StatusServiceUnavailable)
-		// 	}
-		// case LOGGER:
-		// 	w.WriteHeader(http.StatusOK)
-		// }
-		req <- LIVE
-		switch <-res {
-		case false:
-			w.WriteHeader(http.StatusServiceUnavailable)
-		case true:
+func liveness() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if s == ready {
 			w.WriteHeader(http.StatusOK)
+			return
 		}
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 }
 
 // startup
 
-// termination
+func terminating() {
+
+}

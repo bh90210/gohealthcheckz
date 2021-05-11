@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: testapp
-  namespace: default
+  namespace: euoe
 spec:
   replicas: 2
   revisionHistoryLimit: 2
@@ -15,8 +15,8 @@ spec:
         name: testapp
     spec:
       containers:
-      - name: grpc
-        image: bh90210/healtzcheck:latest
+      - name: testapp
+        image: registry.euoe.dev/bh90210/healtzcheck:latest
         imagePullPolicy: Always
         command: ["/bin/sh"]
         args: ["-c", "/bin/testapp"]
@@ -39,3 +39,6 @@ spec:
           failureThreshold: 6
           successThreshold: 1
       terminationGracePeriodSeconds: 5
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred
