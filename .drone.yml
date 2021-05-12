@@ -21,7 +21,6 @@ trigger:
   - main
   event:
   - push
-  # - pull_request
 ---
 kind: secret
 name: docker
