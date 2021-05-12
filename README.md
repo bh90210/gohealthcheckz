@@ -1,5 +1,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bh90210/healthz)](https://goreportcard.com/report/github.com/bh90210/healthz)
 [![Build Status](https://drone.euoe.dev/api/badges/bh90210/healthz/status.svg)](https://drone.euoe.dev/bh90210/healthz)
+[![codecov](https://codecov.io/gh/bh90210/healthz/branch/main/graph/badge.svg?token=9PSK4W6VJ9)](https://codecov.io/gh/bh90210/healthz)
 
 # healthz
 
