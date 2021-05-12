@@ -5,7 +5,7 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux 
 ENV GOARCH=amd64 
 RUN go mod init testapp
-RUN go get github.com/bh90210/healthz
+RUN go mod tidy
 RUN go build -o "testapp" ./main.go
 
 FROM alpine:3.13.5
