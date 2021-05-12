@@ -1,3 +1,6 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/bh90210/healthz)](https://goreportcard.com/report/github.com/bh90210/healthz)
+[![Build Status](https://drone.euoe.dev/api/badges/bh90210/healthz/status.svg)](https://drone.euoe.dev/bh90210/healthz)
+
 # healthz
 
 A tiny & extremely simple to use library for Kubernetes liveness/readiness/termination checks.
