@@ -1,5 +1,5 @@
 FROM golang:1.16
-COPY main.go /app
+COPY . /app
 WORKDIR /app
 ENV CGO_ENABLED=0 
 ENV GOOS=linux 
