@@ -3,8 +3,11 @@ package healthz
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"os/signal"
 	"syscall"
 	"testing"
+	"time"
 )
 
 func TestNewCheckEmptyLive(t *testing.T) {
@@ -177,7 +180,7 @@ func TestTerminating(t *testing.T) {
 	}
 
 	proc.Signal(syscall.SIGINT)
-
+	time.Sleep(1 * time.Second)
 	if term != <-done {
 		t.Errorf("termination return: got %v want true",
 			term)
