@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc
+  namespace: default
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      name: grpc
+  template:
+    metadata:
+      labels:
+        name: grpc
+    spec:
+      containers:
+      - name: grpc
+        image: bh90210/healtzcheckgrpc:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh"]
+        args: ["-c", "/bin/testapp"]
+        ports:
+          - containerPort: 50051
+            name: grpc
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+      terminationGracePeriodSeconds: 5
