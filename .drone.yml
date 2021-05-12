@@ -16,14 +16,34 @@ steps:
     dockerfile: ./examples/http/Dockerfile
     context: ./examples/http/
 
+- name: coverage
+  image: golang:1.15.2
+  commands:
+  - go test -coverprofile=coverage.txt -covermode=atomic
+  
+- name: codecov
+  image: plugins/codecov
+  settings:
+    token:
+      from_secret: codecov
+    files:
+     - coverage.txt
+
 trigger:
   branch:
   - main
   event:
   - push
+  - pull_request
 ---
 kind: secret
 name: docker
 get:
   path: drone-docker
   name: password
+---
+kind: secret
+name: codecov
+get:
+  path: codecov
+  name: token
