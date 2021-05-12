@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	// setting those values is optional, could be used with "" and the bellow default values.
+	// setting these values is optional, they could be left empty "" with the bellow default values being used.
 	h := healthz.NewCheck("live", "ready", "8080")
 
 	go func() {
