@@ -183,5 +183,3 @@ func TestTerminating(t *testing.T) {
 			term)
 	}
 }
-
-}
