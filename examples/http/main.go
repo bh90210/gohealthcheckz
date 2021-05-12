@@ -7,24 +7,29 @@ import (
 	"github.com/bh90210/healthz"
 )
 
-func init() {
+func main() {
+	var healthCheck healthz.Check
+
+	// setting struct values is optional.
+	healthCheck.Liveness = "live"
+	healthCheck.Readiness = "ready"
+	healthCheck.Port = "8080"
+
 	go func() {
-		if err := healthz.Start(); err != nil {
+		if err := healthCheck.Start(); err != nil {
 			log.Fatalln(err)
 		}
 	}()
-}
 
-func main() {
 	go func() {
 		log.Println("ready")
-		healthz.Ready()
+		healthCheck.Ready()
 		time.Sleep(time.Second * 60)
 		log.Println("not ready")
-		healthz.NotReady()
+		healthCheck.NotReady()
 	}()
 
-	if term := healthz.Terminating(); term == true {
+	if term := healthCheck.Terminating(); term == true {
 		// do something
 	}
 }

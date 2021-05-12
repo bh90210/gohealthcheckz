@@ -23,7 +23,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /live
-            port: 6080
+            port: 8080
           initialDelaySeconds: 30
           periodSeconds: 60
           timeoutSeconds: 5
@@ -32,13 +32,13 @@ spec:
         startupProbe:
           httpGet:
             path: /live
-            port: 6080
+            port: 8080
           failureThreshold: 15
           periodSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready
-            port: 6080
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 5
@@ -46,4 +46,3 @@ spec:
           successThreshold: 1
       terminationGracePeriodSeconds: 5
       restartPolicy: Always
-
