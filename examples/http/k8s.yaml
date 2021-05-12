@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: testapp
-        image: registry.euoe.dev/bh90210/healtzcheck:latest
+        image: bh90210/healtzcheck:latest
         imagePullPolicy: Always
         command: ["/bin/sh"]
         args: ["-c", "/bin/testapp"]
@@ -29,6 +29,12 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 6
           successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /live
+            port: 6080
+          failureThreshold: 15
+          periodSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready
