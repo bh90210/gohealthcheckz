@@ -26,7 +26,8 @@ type Check struct {
 	state     state
 }
 
-// NewCheck .
+// NewCheck initializes and return a new Check.
+// Arguments can be left blank "" and use the defaults endpoints (/live, /ready) and port `:8080`.
 func NewCheck(live, ready, port string) *Check {
 	if len(live) == 0 {
 		live = "/live"
