@@ -8,17 +8,25 @@ A tiny & extremely simple to use library for Kubernetes liveness/readiness/termi
 
 In your `init` or at the begging of your `main` function include:
 ```go
-  var healthCheck healthz.Check
+var healthCheck healthz.Check
 
-	go func() {
-		if err := healthCheck.Start(); err != nil {
-      // Do something with the err
-			log.Fatalln(err)
-		}
-	}()
+go func() {
+	if err := healthCheck.Start(); err != nil {
+    // Do something with the err
+    log.Fatalln(err)
+	}
+}()
 ```
-It is a blocking function so use it
-accordingly. 
+_It is a blocking function so use it
+accordingly._
+
+If you would like to specify endpoints and port you can:
+```go
+healthCheck.Liveness = "live"
+healthCheck.Readiness = "ready"
+healthCheck.Port = "8080"
+```
+Defining them is optional. If not set the above default values will be used.
 
 ## Ready & NotReady
 
@@ -40,9 +48,9 @@ healthCheck.NotReady()
 
 Kubernetes allows a grace period for any necessary clean up based on your `terminationGracePeriodSeconds` config setting.
 ```go
-	if term := healthCheck.Terminating(); term == true {
-		// do some clean up
-	}
+if term := healthCheck.Terminating(); term == true {
+	// do some clean up
+}
 ```
 It is a blocking function.
 
