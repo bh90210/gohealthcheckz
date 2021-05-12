@@ -3,128 +3,168 @@ package healthz
 import (
 	"net/http"
 	"net/http/httptest"
+	"syscall"
 	"testing"
 )
 
-func TestNewCheck(t *testing.T) {
+func TestNewCheckEmptyLive(t *testing.T) {
 	t.Parallel()
+
+	h := NewCheck("", "", "")
+	h.Ready()
+
+	r := httptest.NewRequest(http.MethodGet, "/live", nil)
+	w := httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res1 := w.Result()
+	if res1.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res1.Status)
+	}
+
+	r = httptest.NewRequest(http.MethodGet, "/ready", nil)
+	w = httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.ready(w, r)
+	res2 := w.Result()
+	if res2.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res2.Status)
+	}
+}
+
+func TestNewCheckValues(t *testing.T) {
+	t.Parallel()
+
+	h := NewCheck("livez", "readyz", "8081")
+	h.Ready()
+
+	r := httptest.NewRequest(http.MethodGet, "/livez", nil)
+	w := httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res := w.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res.Status)
+	}
+
+	r = httptest.NewRequest(http.MethodGet, "/readyz", nil)
+	w = httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.ready(w, r)
+	res = w.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res.Status)
+	}
+}
+
+func TestNewCheckPrefixes(t *testing.T) {
+	t.Parallel()
+
+	h := NewCheck("/livez", "/readyz", ":8082")
+	h.Ready()
+
+	r := httptest.NewRequest(http.MethodGet, "/livez", nil)
+	w := httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res := w.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res.Status)
+	}
+
+	r = httptest.NewRequest(http.MethodGet, "/readyz", nil)
+	w = httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res = w.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res.Status)
+	}
 }
 
 func TestLiveness(t *testing.T) {
 	t.Parallel()
-	h := NewCheck("live", "", "")
 
-	//
-	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
-	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("GET", "/health-check", nil)
-	if err != nil {
-		t.Fatal(err)
+	h := NewCheck("livez", "", "8086")
+
+	r := httptest.NewRequest(http.MethodGet, "/livez", nil)
+	w := httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res := w.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res.Status)
 	}
 
-	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(h.live())
-
-	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
-	// directly and pass in our Request and ResponseRecorder.
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+	r = httptest.NewRequest(http.MethodPost, "/livez", nil)
+	w = httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res = w.Result()
+	if res.StatusCode != http.StatusMethodNotAllowed {
+		t.Errorf("handler returned unexpected status code: got %v want 405",
+			res.Status)
 	}
 }
 
 func TestReadiness(t *testing.T) {
 	t.Parallel()
+
+	h := NewCheck("", "readyz", "8087")
+
+	// test ready
+	h.Ready()
+
+	r := httptest.NewRequest(http.MethodGet, "/readyz", nil)
+	w := httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res := w.Result()
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("handler returned unexpected status code: got %v want 200",
+			res.Status)
+	}
+
+	r = httptest.NewRequest(http.MethodPost, "/readyz", nil)
+	w = httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res = w.Result()
+	if res.StatusCode != http.StatusMethodNotAllowed {
+		t.Errorf("handler returned unexpected status code: got %v want 405",
+			res.Status)
+	}
+
+	// test notready
+	h.NotReady()
+
+	r = httptest.NewRequest(http.MethodGet, "/readyz", nil)
+	w = httptest.NewRecorder()
+	h.router().ServeHTTP(w, r)
+	h.live(w, r)
+	res = w.Result()
+	if res.StatusCode != http.StatusServiceUnavailable {
+		t.Errorf("handler returned unexpected status code: got %v want 503",
+			res.Status)
+	}
 }
 
 func TestTerminating(t *testing.T) {
-	t.Parallel()
+	h := NewCheck("", "", "")
+	var term bool
+	go func() {
+		term = h.Terminating()
+	}()
+	syscall.SIGTERM.Signal()
+	if term != true {
+		t.Errorf("termination return: got %v want true",
+			term)
+	}
 }
-
-// // https://golang.org/src/net/http/httptest/example_test.go
-// func TestRouter(t *testing.T) {
-// 	t.Parallel()
-// 	ts := httptest.NewServer(router())
-// 	defer ts.Close()
-
-// 	res, err := http.Get(ts.URL)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-
-// 	if res.StatusCode != 200 {
-// 		t.Errorf("handler returned unexpected status code: got %v want 200",
-// 			res.StatusCode)
-// 	}
-// }
-
-// func TestGet(t *testing.T) {
-// 	t.Parallel()
-// 	req := httptest.NewRequest("GET", "/", nil)
-// 	w := httptest.NewRecorder()
-// 	get(w, req)
-// 	resp := w.Result()
-// 	if status := resp.StatusCode; status != http.StatusOK {
-// 		t.Errorf("handler returned wrong status code: got %v want %v",
-// 			status, http.StatusOK)
-// 	}
-
-// 	if resp.StatusCode != 200 {
-// 		t.Errorf("handler returned unexpected status code: got\n %v \nwant\n 200",
-// 			resp.StatusCode)
-// 	}
-// }
-
-// func TestHandle(t *testing.T) {
-// 	pl, err := ioutil.ReadFile("testdata/payload.json")
-// 	if err != nil {
-// 		t.Fatalf("could not read payload.json: %v", err)
-// 	}
-
-// 	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080", bytes.NewReader(pl))
-// 	if err != nil {
-// 		t.Fatalf("could not create test request: %v", err)
-// 	}
-// 	rec := httptest.NewRecorder()
-// 	handle(rec, req)
-// 	res := rec.Result()
-
-// 	if res.StatusCode != http.StatusOK {
-// 		t.Errorf("unexpected status code %s", res.Status)
-// 	}
-// 	defer res.Body.Close()
-
-// 	msg, err := ioutil.ReadAll(res.Body)
-// 	if err != nil {
-// 		t.Fatalf("could not read result payload: %v", err)
-// 	}
-
-// 	if exp := "pull request id: 191568743"; string(msg) != exp {
-// 		t.Fatalf("expected message %q; got %q", exp, msg)
-// 	}
-// }
-
-// func BenchmarkHandle(b *testing.B) {
-// 	b.StopTimer()
-
-// 	pl, err := ioutil.ReadFile("testdata/payload.json")
-// 	if err != nil {
-// 		b.Fatalf("could not read payload.json: %v", err)
-// 	}
-
-// 	for i := 0; i < b.N; i++ {
-// 		req, err := http.NewRequest(http.MethodPost, "http://localhost:8080", bytes.NewReader(pl))
-// 		if err != nil {
-// 			b.Fatalf("could not create test request: %v", err)
-// 		}
-// 		rec := httptest.NewRecorder()
-
-// 		b.StartTimer()
-// 		handle(rec, req)
-// 		b.StopTimer()
-// 	}
-// }

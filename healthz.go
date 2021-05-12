@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/gorilla/mux"
 )
 
 type state bool
@@ -24,36 +26,42 @@ type Check struct {
 	state     state
 }
 
+// NewCheck .
 func NewCheck(live, ready, port string) *Check {
-	h := &Check{}
-
-	if len(h.liveness) == 0 {
-		h.liveness = "/live"
-	} else if !strings.HasPrefix(h.liveness, "/") {
-		h.liveness = fmt.Sprintf("/%s", h.liveness)
+	if len(live) == 0 {
+		live = "/live"
+	} else if !strings.HasPrefix(live, "/") {
+		live = fmt.Sprintf("/%s", live)
 	}
 
-	if len(h.readiness) == 0 {
-		h.readiness = "/ready"
-	} else if !strings.HasPrefix(h.readiness, "/") {
-		h.readiness = fmt.Sprintf("/%s", h.readiness)
+	if len(ready) == 0 {
+		ready = "/ready"
+	} else if !strings.HasPrefix(ready, "/") {
+		ready = fmt.Sprintf("/%s", ready)
 	}
 
-	if len(h.port) == 0 {
-		h.port = "8080"
-	} else if strings.HasPrefix(h.readiness, ":") {
-		h.readiness = strings.TrimPrefix(h.readiness, ":")
+	if len(port) == 0 {
+		port = "8080"
+	} else if strings.HasPrefix(port, ":") {
+		port = strings.TrimPrefix(port, ":")
 	}
 
-	return h
+	return &Check{
+		liveness:  live,
+		readiness: ready,
+		port:      port,
+	}
 }
 
 // Start starts the healthcheck http server. It should be called at the start of your application.
 // It is a blocking function.
 func (h *Check) Start() error {
-	http.Handle(h.liveness, h.live())
-	http.Handle(h.readiness, h.ready())
-	return http.ListenAndServe(fmt.Sprintf(":%s", h.port), nil)
+	srv := &http.Server{
+		Handler: h.router(),
+		Addr:    fmt.Sprintf(":%s", h.port),
+	}
+	return srv.ListenAndServe()
+
 }
 
 // Ready sets the state of service to ready. State's default value is false.
@@ -81,18 +89,21 @@ func (h *Check) Terminating() bool {
 	return <-done
 }
 
-func (h *Check) live() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}
+func (h *Check) router() *mux.Router {
+	r := mux.NewRouter()
+	r.HandleFunc(h.liveness, h.live).Methods("GET")
+	r.HandleFunc(h.readiness, h.ready).Methods("GET")
+	return r
 }
 
-func (h *Check) ready() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if h.state == ready {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		w.WriteHeader(http.StatusServiceUnavailable)
+func (h *Check) live(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Check) ready(w http.ResponseWriter, r *http.Request) {
+	if h.state == ready {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
+	w.WriteHeader(http.StatusServiceUnavailable)
 }
