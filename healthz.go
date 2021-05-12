@@ -18,35 +18,42 @@ const (
 )
 
 type Check struct {
-	Liveness  string
-	Readiness string
-	Port      string
+	liveness  string
+	readiness string
+	port      string
+	state     state
+}
 
-	state state
+func NewCheck(live, ready, port string) *Check {
+	h := &Check{}
+
+	if len(h.liveness) == 0 {
+		h.liveness = "/live"
+	} else if !strings.HasPrefix(h.liveness, "/") {
+		h.liveness = fmt.Sprintf("/%s", h.liveness)
+	}
+
+	if len(h.readiness) == 0 {
+		h.readiness = "/ready"
+	} else if !strings.HasPrefix(h.readiness, "/") {
+		h.readiness = fmt.Sprintf("/%s", h.readiness)
+	}
+
+	if len(h.port) == 0 {
+		h.port = "8080"
+	} else if strings.HasPrefix(h.readiness, ":") {
+		h.readiness = strings.TrimPrefix(h.readiness, ":")
+	}
+
+	return h
 }
 
 // Start starts the healthcheck http server. It should be called at the start of your application.
 // It is a blocking function.
 func (h *Check) Start() error {
-	if len(h.Liveness) == 0 {
-		h.Liveness = "/live"
-	} else if !strings.HasPrefix(h.Liveness, "/") {
-		h.Liveness = fmt.Sprintf("/%s", h.Liveness)
-	}
-
-	if len(h.Readiness) == 0 {
-		h.Readiness = "/ready"
-	} else if !strings.HasPrefix(h.Readiness, "/") {
-		h.Readiness = fmt.Sprintf("/%s", h.Readiness)
-	}
-
-	if len(h.Port) == 0 {
-		h.Port = "8080"
-	}
-
-	http.Handle(h.Liveness, h.liveness())
-	http.Handle(h.Readiness, h.readiness())
-	return http.ListenAndServe(fmt.Sprintf(":%s", h.Port), nil)
+	http.Handle(h.liveness, h.live())
+	http.Handle(h.readiness, h.ready())
+	return http.ListenAndServe(fmt.Sprintf(":%s", h.port), nil)
 }
 
 // Ready sets the state of service to ready. State's default value is false.
@@ -74,13 +81,13 @@ func (h *Check) Terminating() bool {
 	return <-done
 }
 
-func (h *Check) liveness() http.HandlerFunc {
+func (h *Check) live() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 }
 
-func (h *Check) readiness() http.HandlerFunc {
+func (h *Check) ready() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if h.state == ready {
 			w.WriteHeader(http.StatusOK)

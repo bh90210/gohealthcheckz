@@ -17,8 +17,7 @@ go func() {
 	}
 }()
 ```
-_It is a blocking function so use it
-accordingly._
+_It is a blocking function._
 
 If you would like to specify endpoints and port you can:
 ```go
@@ -52,7 +51,7 @@ if term := healthCheck.Terminating(); term == true {
 	// do some clean up
 }
 ```
-It is a blocking function.
+_It is a blocking function._
 
 ## gRPC
 

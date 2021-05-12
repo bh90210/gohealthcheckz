@@ -1,36 +1,39 @@
 package healthz
 
 import (
-	"bytes"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
+func TestNewCheck(t *testing.T) {
+	t.Parallel()
+}
+
 func TestLiveness(t *testing.T) {
 	t.Parallel()
+	h := NewCheck("live", "", "")
 
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080", bytes.NewReader(pl))
+	//
+	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
+	// pass 'nil' as the third parameter.
+	req, err := http.NewRequest("GET", "/health-check", nil)
 	if err != nil {
-		t.Fatalf("could not create test request: %v", err)
-	}
-	rec := httptest.NewRecorder()
-	handle(rec, req)
-	res := rec.Result()
-
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("unexpected status code %s", res.Status)
-	}
-	defer res.Body.Close()
-
-	msg, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Fatalf("could not read result payload: %v", err)
+		t.Fatal(err)
 	}
 
-	if exp := "pull request id: 191568743"; string(msg) != exp {
-		t.Fatalf("expected message %q; got %q", exp, msg)
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(h.live())
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
 	}
 }
 

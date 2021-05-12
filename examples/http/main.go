@@ -8,12 +8,8 @@ import (
 )
 
 func main() {
-	var h healthz.Check
-
-	// setting those values is optional
-	h.Liveness = "live"
-	h.Readiness = "ready"
-	h.Port = "8080"
+	// setting those values is optional, could be used with "" and the bellow default values.
+	h := healthz.NewCheck("live", "ready", "8080")
 
 	go func() {
 		if err := h.Start(); err != nil {
