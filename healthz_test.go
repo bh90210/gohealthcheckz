@@ -162,9 +162,26 @@ func TestTerminating(t *testing.T) {
 	go func() {
 		term = h.Terminating()
 	}()
-	syscall.SIGTERM.Signal()
-	if term != true {
+
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		done <- true
+	}()
+
+	proc, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	proc.Signal(syscall.SIGINT)
+
+	if term != <-done {
 		t.Errorf("termination return: got %v want true",
 			term)
 	}
+}
+
 }
