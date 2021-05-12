@@ -20,8 +20,8 @@ var s state
 // Start starts the healthcheck http server. It should be called at the start of your application.
 // It is a blocking function.
 func Start() error {
-	http.Handle("/ready", readiness())
 	http.Handle("/live", liveness())
+	http.Handle("/ready", readiness())
 	return http.ListenAndServe(":6080", nil)
 }
 
@@ -50,13 +50,17 @@ func Terminating() bool {
 	return <-done
 }
 
+func LiveEndpoint(ep string) {
+
+}
+
+func ReadyEndpoint(ep string) {
+
+}
+
 func liveness() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if s == ready {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		w.WriteHeader(http.StatusServiceUnavailable)
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
