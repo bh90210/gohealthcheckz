@@ -10,18 +10,19 @@ import (
 	"syscall"
 )
 
-type state int
+type state bool
 
 const (
-	notready state = iota
-	ready
+	notready state = false
+	ready    state = true
 )
 
 type Check struct {
 	Liveness  string
 	Readiness string
 	Port      string
-	state     state
+
+	state state
 }
 
 // Start starts the healthcheck http server. It should be called at the start of your application.

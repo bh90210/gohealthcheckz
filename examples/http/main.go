@@ -8,28 +8,28 @@ import (
 )
 
 func main() {
-	var healthCheck healthz.Check
+	var h healthz.Check
 
-	// setting struct values is optional.
-	healthCheck.Liveness = "live"
-	healthCheck.Readiness = "ready"
-	healthCheck.Port = "8080"
+	// setting those values is optional
+	h.Liveness = "live"
+	h.Readiness = "ready"
+	h.Port = "8080"
 
 	go func() {
-		if err := healthCheck.Start(); err != nil {
+		if err := h.Start(); err != nil {
 			log.Fatalln(err)
 		}
 	}()
 
 	go func() {
 		log.Println("ready")
-		healthCheck.Ready()
+		h.Ready()
 		time.Sleep(time.Second * 60)
 		log.Println("not ready")
-		healthCheck.NotReady()
+		h.NotReady()
 	}()
 
-	if term := healthCheck.Terminating(); term == true {
+	if term := h.Terminating(); term == true {
 		// do something
 	}
 }

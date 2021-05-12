@@ -8,8 +8,10 @@ A tiny & extremely simple to use library for Kubernetes liveness/readiness/termi
 
 In your `init` or at the begging of your `main` function include:
 ```go
+  var healthCheck healthz.Check
+
 	go func() {
-		if err := healthz.Start(); err != nil {
+		if err := healthCheck.Start(); err != nil {
       // Do something with the err
 			log.Fatalln(err)
 		}
@@ -24,21 +26,21 @@ accordingly.
 
 The default state is `NotReady`. When your application is ready to service requests you should set it to:
 ```go
-healthz.Ready()
+healthCheck.Ready()
 ``` 
 
 ### NotReady
 
-If your application stops being able to server requests and you wish to let Kubernetes proceed to the appropriate action based on `restartPolicy` you can achieve that by setting:
+If your application stops being able to server requests and you wish to let Kubernetes proceed to the appropriate action based on `restartPolicy` (either wait or restart the container) you can achieve that by setting:
 ```go
-healthz.NotReady()
+healthCheck.NotReady()
 ```
 
 ## Terminating
 
 Kubernetes allows a grace period for any necessary clean up based on your `terminationGracePeriodSeconds` config setting.
 ```go
-	if term := healthz.Terminating(); term == true {
+	if term := healthCheck.Terminating(); term == true {
 		// do some clean up
 	}
 ```

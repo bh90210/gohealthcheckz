@@ -1,0 +1,28 @@
+kind: pipeline
+type: kubernetes
+name: examples/http
+
+steps:
+- name: docker
+  image: plugins/docker
+  settings:
+    repo: bh90210/healtzcheck
+    auto_tag: true
+    username: bh90210
+    password: 
+      from_secret: docker
+    mtu: 1440
+    dockerfile: examples/http/Dockerfile
+
+trigger:
+  branch:
+  - main
+  event:
+  - push
+  - pull_request
+---
+kind: secret
+name: docker
+get:
+  path: drone-docker
+  name: password
