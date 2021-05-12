@@ -12,7 +12,7 @@ steps:
     password: 
       from_secret: docker
     mtu: 1440
-    dockerfile: examples/http/Dockerfile
+    dockerfile: ./examples/http/Dockerfile
 
 trigger:
   branch:
