@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/signal"
 	"syscall"
 	"testing"
 	"time"
@@ -160,28 +159,22 @@ func TestReadiness(t *testing.T) {
 }
 
 func TestTerminating(t *testing.T) {
+	t.Parallel()
+
 	h := NewCheck("", "", "")
-	var term bool
+
 	go func() {
-		term = h.Terminating()
+		time.Sleep(250 * time.Millisecond)
+		proc, err := os.FindProcess(os.Getpid())
+		if err != nil {
+			t.Error(err)
+		}
+
+		proc.Signal(syscall.SIGINT)
 	}()
 
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		done <- true
-	}()
-
-	proc, err := os.FindProcess(os.Getpid())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	proc.Signal(syscall.SIGINT)
-	time.Sleep(1 * time.Second)
-	if term != <-done {
+	term := h.Terminating()
+	if term != true {
 		t.Errorf("termination return: got %v want true",
 			term)
 	}
