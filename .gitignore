@@ -2,3 +2,4 @@ test/
 *.pb.gz
 *.test
 test.sh
+testexamples/

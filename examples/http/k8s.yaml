@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: testapp
-  namespace: euoe
+  namespace: default
 spec:
   replicas: 2
   revisionHistoryLimit: 2
@@ -46,5 +46,4 @@ spec:
           successThreshold: 1
       terminationGracePeriodSeconds: 5
       restartPolicy: Always
-      imagePullSecrets:
-      - name: regcred
+

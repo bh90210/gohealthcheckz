@@ -41,6 +41,4 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 6
           successThreshold: 1
-      imagePullSecrets:
-      - name: regcred
       terminationGracePeriodSeconds: 5
