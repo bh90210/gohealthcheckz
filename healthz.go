@@ -42,9 +42,9 @@ func NewCheck(live, ready, port string) *Check {
 	}
 
 	if len(port) == 0 {
-		port = "8080"
-	} else if strings.HasPrefix(port, ":") {
-		port = strings.TrimPrefix(port, ":")
+		port = ":8080"
+	} else if !strings.HasPrefix(port, ":") {
+		port = fmt.Sprintf(":%s", port)
 	}
 
 	return &Check{
@@ -59,7 +59,7 @@ func NewCheck(live, ready, port string) *Check {
 func (h *Check) Start() error {
 	srv := &http.Server{
 		Handler: h.router(),
-		Addr:    fmt.Sprintf(":%s", h.port),
+		Addr:    h.port,
 	}
 	return srv.ListenAndServe()
 
