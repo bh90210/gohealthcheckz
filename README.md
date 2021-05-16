@@ -5,7 +5,7 @@
 
 # healthz
 
-A tiny & extremely simple to use library for Kubernetes liveness/readiness/termination checks.
+A tiny & extremely simple to use package for Kubernetes liveness/readiness/termination checks.
 
 # Use
 
