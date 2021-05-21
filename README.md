@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="26%" src="https://user-images.githubusercontent.com/22690219/119138540-a8f66b80-ba4a-11eb-8fc9-273a4328db1d.png" />
+  <img width="26%" src="https://user-images.githubusercontent.com/22690219/119139792-1b1b8000-ba4c-11eb-8c88-34c439eada3b.png" />
 </p>
  
 [![Go Report Card](https://goreportcard.com/badge/github.com/bh90210/healthz)](https://goreportcard.com/report/github.com/bh90210/healthz)
