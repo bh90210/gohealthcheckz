@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="26%" src="https://user-images.githubusercontent.com/22690219/119138540-a8f66b80-ba4a-11eb-8fc9-273a4328db1d.png" />
+</p>
+ 
 [![Go Report Card](https://goreportcard.com/badge/github.com/bh90210/healthz)](https://goreportcard.com/report/github.com/bh90210/healthz)
 [![Build Status](https://drone.euoe.dev/api/badges/bh90210/healthz/status.svg)](https://drone.euoe.dev/bh90210/healthz)
 [![codecov](https://codecov.io/gh/bh90210/healthz/branch/main/graph/badge.svg?token=9PSK4W6VJ9)](https://codecov.io/gh/bh90210/healthz)
