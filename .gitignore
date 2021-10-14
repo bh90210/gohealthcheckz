@@ -4,3 +4,4 @@ test/
 test.sh
 testexamples/
 *.txt
+.drone.yml
