@@ -101,8 +101,24 @@ Kubernetes config excerpt:
 
 ## gRPC
 
-WIP
+```go
+hc.GRPC()
+```
 
+Kubernetes config excerpt:
+```yaml
+...
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+...
+```
 # Contributing
 
 We are using a feature request workflow. Fork the repo create a new branch ie `fix/http` or `feat/newfeature` and make a PR against `main` branch.
