@@ -4,16 +4,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/bh90210/healthz"
+	healthz "github.com/bh90210/healthz/grpc"
 )
 
 func main() {
-	h := healthz.NewCheck(healthz.OptionsLivePath("live"),
-		healthz.OptionsReadyPath("ready"), healthz.OptionsPort("8080"))
+	h, err := healthz.NewCheckGRPC(healthz.LivePath("live"))
+	if err != nil {
+		panic(err)
+	}
 
 	go func() {
 		if err := h.Start(); err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 	}()
 

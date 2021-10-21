@@ -4,7 +4,6 @@
  
 [![Go Reference](https://pkg.go.dev/badge/github.com/bh90210/healthz.svg)](https://pkg.go.dev/github.com/bh90210/healthz)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bh90210/healthz)](https://goreportcard.com/report/github.com/bh90210/healthz)
-[![codecov](https://codecov.io/gh/bh90210/healthz/branch/main/graph/badge.svg?token=9PSK4W6VJ9)](https://codecov.io/gh/bh90210/healthz)
 
 
 # healthz
@@ -15,7 +14,7 @@ A tiny & extremely simple to use library for Kubernetes liveness/readiness/termi
 
 _For full examples see the [examples]() folder._
 
-## Start
+## Init 	
 
 In your `init` or at the begging of your `main` function include:
 ```go
@@ -102,16 +101,30 @@ Kubernetes config excerpt:
 
 ## gRPC
 
-### Liveness
+The canonical way to achieve health checks with Kubernetes is to include [grpc-health-probe](https://github.com/grpc-ecosystem/grpc-health-probe/) along your dockerized gRPC app.
+
+```dockerfile
+FROM alpine:3.9
+RUN apk add wget
+RUN GRPC_HEALTH_PROBE_VERSION=v0.3.0 && \
+    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 
+RUN chmod +x /bin/grpc_health_probe  
+```
+
+## Init
 
 ```go
-hc := healthz.NewCheckGRPC("live", "ready", "8080")
+import healthz "github.com/bh90210/healthz/grpc"
+
+func main() {
+hc := healthz.NewCheckGRPC("live", "ready", "5000")
 
 go func() {
 	if err := hc.Start(); err != nil {
 		// do some error handling
 	}
 }()
+}
 ```
 
 Kubernetes config excerpt:

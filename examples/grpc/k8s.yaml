@@ -24,18 +24,16 @@ spec:
           - containerPort: 50051
             name: grpc
         livenessProbe:
-          httpGet:
-            path: /live
-            port: 8080
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:5000"]
           initialDelaySeconds: 30
           periodSeconds: 60
           timeoutSeconds: 5
           failureThreshold: 6
           successThreshold: 1
         readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8080
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:5000"]
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 5
