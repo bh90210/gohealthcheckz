@@ -7,6 +7,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/matryer/is"
 )
 
 func TestNewCheckEmptyLive(t *testing.T) {
@@ -20,20 +22,18 @@ func TestNewCheckEmptyLive(t *testing.T) {
 	h.router().ServeHTTP(w, r)
 	h.liveHandler(w, r)
 	res1 := w.Result()
-	if res1.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res1.Status)
-	}
+
+	is := is.New(t)
+	is.Equal(res1.StatusCode, http.StatusOK)
 
 	r = httptest.NewRequest(http.MethodGet, "/ready", nil)
 	w = httptest.NewRecorder()
 	h.router().ServeHTTP(w, r)
 	h.readyHandler(w, r)
 	res2 := w.Result()
-	if res2.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res2.Status)
-	}
+
+	is = is.New(t)
+	is.Equal(res2.StatusCode, http.StatusOK)
 }
 
 func TestNewCheckValues(t *testing.T) {
@@ -48,20 +48,18 @@ func TestNewCheckValues(t *testing.T) {
 	h.router().ServeHTTP(w, r)
 	h.liveHandler(w, r)
 	res := w.Result()
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res.Status)
-	}
+
+	is := is.New(t)
+	is.Equal(res.StatusCode, http.StatusOK)
 
 	r = httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	w = httptest.NewRecorder()
 	h.router().ServeHTTP(w, r)
 	h.readyHandler(w, r)
 	res = w.Result()
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res.Status)
-	}
+
+	is = is.New(t)
+	is.Equal(res.StatusCode, http.StatusOK)
 }
 
 func TestNewCheckPrefixes(t *testing.T) {
@@ -76,20 +74,18 @@ func TestNewCheckPrefixes(t *testing.T) {
 	h.router().ServeHTTP(w, r)
 	h.liveHandler(w, r)
 	res := w.Result()
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res.Status)
-	}
+
+	is := is.New(t)
+	is.Equal(res.StatusCode, http.StatusOK)
 
 	r = httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	w = httptest.NewRecorder()
 	h.router().ServeHTTP(w, r)
 	h.readyHandler(w, r)
 	res = w.Result()
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res.Status)
-	}
+
+	is = is.New(t)
+	is.Equal(res.StatusCode, http.StatusOK)
 }
 
 func TestLiveness(t *testing.T) {
@@ -102,20 +98,9 @@ func TestLiveness(t *testing.T) {
 	h.router().ServeHTTP(w, r)
 	h.liveHandler(w, r)
 	res := w.Result()
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res.Status)
-	}
 
-	r = httptest.NewRequest(http.MethodPost, "/livez", nil)
-	w = httptest.NewRecorder()
-	h.router().ServeHTTP(w, r)
-	h.liveHandler(w, r)
-	res = w.Result()
-	if res.StatusCode != http.StatusMethodNotAllowed {
-		t.Errorf("handler returned unexpected status code: got %v want 405",
-			res.Status)
-	}
+	is := is.New(t)
+	is.Equal(res.StatusCode, http.StatusOK)
 }
 
 func TestReadiness(t *testing.T) {
@@ -131,20 +116,18 @@ func TestReadiness(t *testing.T) {
 	h.router().ServeHTTP(w, r)
 	h.readyHandler(w, r)
 	res := w.Result()
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("handler returned unexpected status code: got %v want 200",
-			res.Status)
-	}
+
+	is := is.New(t)
+	is.Equal(res.StatusCode, http.StatusOK)
 
 	r = httptest.NewRequest(http.MethodPost, "/readyz", nil)
 	w = httptest.NewRecorder()
 	h.router().ServeHTTP(w, r)
 	h.readyHandler(w, r)
 	res = w.Result()
-	if res.StatusCode != http.StatusMethodNotAllowed {
-		t.Errorf("handler returned unexpected status code: got %v want 405",
-			res.Status)
-	}
+
+	is = is.New(t)
+	is.Equal(res.StatusCode, http.StatusMethodNotAllowed)
 
 	// test notready
 	h.NotReady()
@@ -154,10 +137,9 @@ func TestReadiness(t *testing.T) {
 	h.router().ServeHTTP(w, r)
 	h.readyHandler(w, r)
 	res = w.Result()
-	if res.StatusCode != http.StatusServiceUnavailable {
-		t.Errorf("handler returned unexpected status code: got %v want 503",
-			res.Status)
-	}
+
+	is = is.New(t)
+	is.Equal(res.StatusCode, http.StatusServiceUnavailable)
 }
 
 func TestTerminating(t *testing.T) {
@@ -176,8 +158,7 @@ func TestTerminating(t *testing.T) {
 	}()
 
 	term := h.Terminating()
-	if term != true {
-		t.Errorf("termination return: got %v want true",
-			term)
-	}
+
+	is := is.New(t)
+	is.True(term)
 }
