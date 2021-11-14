@@ -12,46 +12,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type state bool
-
-const (
-	notready state = false
-	ready    state = true
-)
-
 type Check struct {
 	liveness  string
 	readiness string
 	port      string
-	state     state
+	ready     bool
 }
 
 // NewCheck initializes and return a new Check.
-// Arguments can be left blank "" and use the defaults endpoints (/live, /ready) and port `:8080`.
-func NewCheck(live, ready, port string) *Check {
-	if len(live) == 0 {
-		live = "/live"
-	} else if !strings.HasPrefix(live, "/") {
-		live = fmt.Sprintf("/%s", live)
+// Default values for server: endpoints (/live, /ready) and port `:8080`.
+func NewCheck(options ...func(*Check)) *Check {
+	// set defaults
+	c := &Check{liveness: "/live", readiness: "/ready", port: ":8080"}
+	// range over provided options to overwrite defaults
+	for _, option := range options {
+		option(c)
 	}
-
-	if len(ready) == 0 {
-		ready = "/ready"
-	} else if !strings.HasPrefix(ready, "/") {
-		ready = fmt.Sprintf("/%s", ready)
-	}
-
-	if len(port) == 0 {
-		port = ":8080"
-	} else if !strings.HasPrefix(port, ":") {
-		port = fmt.Sprintf(":%s", port)
-	}
-
-	return &Check{
-		liveness:  live,
-		readiness: ready,
-		port:      port,
-	}
+	return c
 }
 
 // Start starts the healthcheck http server. It should be called at the start of your application.
@@ -62,18 +39,17 @@ func (h *Check) Start() error {
 		Addr:    h.port,
 	}
 	return srv.ListenAndServe()
-
 }
 
 // Ready sets the state of service to ready. State's default value is false.
 // You have to manually enabled whenever app is ready to service requests.
 func (h *Check) Ready() {
-	h.state = ready
+	h.ready = true
 }
 
 // NotReady sets the state to notready.
 func (h *Check) NotReady() {
-	h.state = notready
+	h.ready = false
 }
 
 // Terminating starts a go routine waiting for SIGINT & SIGTERM signals.
@@ -90,19 +66,49 @@ func (h *Check) Terminating() bool {
 	return <-done
 }
 
+// OptionsLivePath sets live path endpoint.
+func OptionsLivePath(path string) func(*Check) {
+	return func(c *Check) {
+		if !strings.HasPrefix(path, "/") {
+			path = fmt.Sprintf("/%s", path)
+		}
+		c.liveness = path
+	}
+}
+
+// OptionsReadyPath sets ready path endpoint.
+func OptionsReadyPath(path string) func(*Check) {
+	return func(c *Check) {
+		if !strings.HasPrefix(path, "/") {
+			path = fmt.Sprintf("/%s", path)
+		}
+		c.readiness = path
+	}
+}
+
+// OptionsPort sets health check server's port.
+func OptionsPort(port string) func(*Check) {
+	return func(c *Check) {
+		if !strings.HasPrefix(port, ":") {
+			port = fmt.Sprintf(":%s", port)
+		}
+		c.port = port
+	}
+}
+
 func (h *Check) router() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc(h.liveness, h.live).Methods("GET")
-	r.HandleFunc(h.readiness, h.ready).Methods("GET")
+	r.HandleFunc(h.liveness, h.liveHandler).Methods("GET")
+	r.HandleFunc(h.readiness, h.readyHandler).Methods("GET")
 	return r
 }
 
-func (h *Check) live(w http.ResponseWriter, r *http.Request) {
+func (h *Check) liveHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Check) ready(w http.ResponseWriter, r *http.Request) {
-	if h.state == ready {
+func (h *Check) readyHandler(w http.ResponseWriter, r *http.Request) {
+	if h.ready {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
