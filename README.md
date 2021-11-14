@@ -1,14 +1,13 @@
 <p align="center">
   <img width="26%" src="https://user-images.githubusercontent.com/22690219/119139792-1b1b8000-ba4c-11eb-8c88-34c439eada3b.png" />
 </p>
- 
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/bh90210/healthz.svg)](https://pkg.go.dev/github.com/bh90210/healthz)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bh90210/healthz)](https://goreportcard.com/report/github.com/bh90210/healthz)
 
-
 # healthz
 
-A tiny & extremely simple to use library for Kubernetes liveness/readiness/termination checks.
+A tiny & extremely simple to use package for Kubernetes liveness/readiness/termination checks.
 
 # Use
 
