@@ -17,11 +17,12 @@ _For full examples see the [examples]() folder._
 
 In your `init` or at the begging of your `main` function include:
 ```go
-hc := healthz.NewCheck("live", "ready", "8080")
+h := healthz.NewCheck(healthz.OptionsLivePath("live"),
+	healthz.OptionsReadyPath("ready"), healthz.OptionsPort("8080"))
 
 go func() {
-	if err := hc.Start(); err != nil {
-		// do some error handling
+	if err := h.Start(); err != nil {
+		panic(err)
 	}
 }()
 ```
