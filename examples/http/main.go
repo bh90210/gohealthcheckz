@@ -25,7 +25,7 @@ func main() {
 		h.Ready()
 	}()
 
-	if term := h.Terminating(); term == true {
+	if h.Terminating() {
 		// do something
 	}
 }

@@ -117,13 +117,16 @@ RUN chmod +x /bin/grpc_health_probe
 import healthz "github.com/bh90210/healthz/grpc"
 
 func main() {
-hc := healthz.NewCheckGRPC("live", "ready", "5000")
-
-go func() {
-	if err := hc.Start(); err != nil {
-		// do some error handling
+	h, err := healthz.NewCheckGRPC(healthz.LivePath("live"))
+	if err != nil {
+		panic(err)
 	}
-}()
+
+	go func() {
+		if err := h.Start(); err != nil {
+			log.Fatalln(err)
+		}
+	}()
 }
 ```
 
